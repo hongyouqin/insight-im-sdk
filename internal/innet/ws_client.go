@@ -2,11 +2,15 @@ package innet
 
 import (
 	"errors"
+	"fmt"
 	"insight/insight-im-sdk/pkg/common"
+	"insight/insight-im-sdk/pkg/constant"
+	"insight/insight-im-sdk/pkg/proto/msg"
+	sdkstruct "insight/insight-im-sdk/sdk_struct"
 	"time"
 
-	"github.com/emicklei/proto"
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 type WSClient struct {
@@ -45,6 +49,7 @@ func (c *WSClient) SendReqWaitResp(msg proto.Message, identifier int32, senderId
 			conn, err := c.writeBinaryMsg(req)
 			if err != nil {
 				if !c.IsWriteTimeout(err) {
+					//	log.Info("write msg retry")
 					time.Sleep(time.Duration(1) * time.Second)
 					continue
 				} else {
@@ -78,6 +83,76 @@ func (c *WSClient) WaitResp(ch chan WsResp) (*WsResp, error) {
 // 接收来自服务端的消息
 func (c *WSClient) recvMessage() {
 	for {
-
+		if c.WSConn.conn == nil {
+			_, err := c.WSConn.ReConnect()
+			if err != nil {
+				time.Sleep(time.Duration(1) * time.Second)
+			}
+			continue
+		}
+		msgType, msg, err := c.WSConn.conn.ReadMessage()
+		if err != nil {
+			continue
+		}
+		if msgType == websocket.BinaryMessage {
+			// 处理消息
+			go c.doMsg(msg)
+		} else {
+			//其他消息
+		}
 	}
+}
+
+func (c *WSClient) doMsg(message []byte) {
+	resp, err := c.decodeMsg(message)
+	if err != nil {
+		return
+	}
+	switch resp.ReqIdentifier {
+	case constant.WSGetNewestSeq:
+		c.doGetNewestSeq(*resp)
+	case constant.WSPullMsgBySeqList:
+		c.doPullMsgBySeqList(*resp)
+	case constant.WSPushMsg:
+		c.doPushMsg(*resp)
+	case constant.WSSendMsg:
+		c.doSendMsg(*resp)
+	default:
+		//其他情况
+		fmt.Println("undefined identifier")
+	}
+}
+
+func (c *WSClient) doSendMsg(resp WsResp) error {
+	if err := c.NotifyResp(resp); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *WSClient) doPushMsg(resp WsResp) error {
+	if resp.ErrCode != 0 {
+		return errors.New(resp.ErrMsg)
+	}
+	//推送到消息同步(msg_sync)处理
+	var data msg.MsgData
+	err := proto.Unmarshal(resp.Data, &data)
+	if err != nil {
+		return err
+	}
+	return common.AddPushMsgTask(&sdkstruct.CmdPushMsg{Msg: &data, Platform: 0}, c.pushMsgCh)
+}
+
+func (c *WSClient) doGetNewestSeq(resp WsResp) error {
+	if err := c.NotifyResp(resp); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *WSClient) doPullMsgBySeqList(resp WsResp) error {
+	if err := c.NotifyResp(resp); err != nil {
+		return err
+	}
+	return nil
 }

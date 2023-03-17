@@ -2,6 +2,8 @@ package common
 
 import (
 	"errors"
+	"insight/insight-im-sdk/pkg/constant"
+	sdkstruct "insight/insight-im-sdk/sdk_struct"
 	"time"
 )
 
@@ -26,6 +28,10 @@ func ProcessTask(task Task) {
 }
 
 // 以下是自定义好的任务
+func AddPushMsgTask(c *sdkstruct.CmdPushMsg, ch chan Cmd2Value) error {
+	c2v := Cmd2Value{Cmd: constant.CmdPushMsg, Value: c}
+	return sendTask(ch, c2v, 1)
+}
 
 func sendTask(ch chan Cmd2Value, value Cmd2Value, timeout int64) error {
 	var flag = 0

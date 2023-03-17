@@ -1,5 +1,7 @@
 package sdkstruct
 
+import "insight/insight-im-sdk/pkg/proto/msg"
+
 var SvrConf IMConfig
 
 type IMConfig struct {
@@ -9,4 +11,10 @@ type IMConfig struct {
 	DataDir       string `json:"data_dir"`
 	LogLevel      uint32 `json:"log_level"`
 	ObjectStorage string `json:"object_storage"` //"cos"(default)  "oss"
+}
+
+// 推送命令消息
+type CmdPushMsg struct {
+	Msg      *msg.MsgData
+	Platform int32
 }

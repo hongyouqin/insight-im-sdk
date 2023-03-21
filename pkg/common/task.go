@@ -33,6 +33,11 @@ func AddPushMsgTask(c *sdkstruct.CmdPushMsg, ch chan Cmd2Value) error {
 	return sendTask(ch, c2v, 1)
 }
 
+func AddNewMsgCome(c *sdkstruct.CmdNewMsgCome, ch chan Cmd2Value) error {
+	c2v := Cmd2Value{Cmd: constant.CmdNewMsgCome, Value: c}
+	return sendTask(ch, c2v, 1)
+}
+
 func sendTask(ch chan Cmd2Value, value Cmd2Value, timeout int64) error {
 	var flag = 0
 	select {

@@ -80,14 +80,14 @@ func (r *WsRespAsyn) NotifyResp(resp WsResp) error {
 }
 
 func notifyCh(ch chan WsResp, value WsResp, timeout int64) error {
-	var flag = 0
+	var flag = false
 	select {
 	case ch <- value:
-		flag = 1
+		flag = true
 	case <-time.After(time.Second * time.Duration(timeout)):
-		flag = 2
+		flag = false
 	}
-	if flag == 1 {
+	if flag {
 		return nil
 	} else {
 		return errors.New("send cmd timeout")

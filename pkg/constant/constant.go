@@ -11,6 +11,12 @@ const (
 	WSKickOnlineMsg    = 2002
 	WsLogoutMsg        = 2003
 	WSDataError        = 3001
+)
 
+// cmd
+const (
+	CmdNewMsgCome = "005"
+
+	CmdMaxSeq  = "maxSeq"
 	CmdPushMsg = "pushMsg"
 )

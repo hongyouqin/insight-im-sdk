@@ -15,6 +15,12 @@ type IMConfig struct {
 
 // 推送命令消息
 type CmdPushMsg struct {
-	Msg      *msg.MsgData
-	Platform int32
+	Msg         *msg.MsgData
+	OperationID string
+}
+
+// 新消息命令
+type CmdNewMsgCome struct {
+	MsgList     []*msg.MsgData
+	OperationID string
 }

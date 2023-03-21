@@ -140,7 +140,7 @@ func (c *WSClient) doPushMsg(resp WsResp) error {
 	if err != nil {
 		return err
 	}
-	return common.AddPushMsgTask(&sdkstruct.CmdPushMsg{Msg: &data, Platform: 0}, c.pushMsgCh)
+	return common.AddPushMsgTask(&sdkstruct.CmdPushMsg{Msg: &data, OperationID: 0}, c.pushMsgCh)
 }
 
 func (c *WSClient) doGetNewestSeq(resp WsResp) error {
